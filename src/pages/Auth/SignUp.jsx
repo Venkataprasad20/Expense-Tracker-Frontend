@@ -47,7 +47,7 @@ const SignUp = () => {
     formData.append("password", password);
     formData.append("profileImage", profilePic); // ✅ this must match multer name
 
-    const response = await fetch("http://localhost:8000/api/v1/auth/register", {
+    const response = await fetch("https://expense-tracker-backend-3sm9.onrender.com/api/v1/auth/register", {
       method: "POST",
       body: formData,
     });
