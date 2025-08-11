@@ -4,8 +4,6 @@ import AuthLayout from '../../components/layouts/AuthLayout.jsx';
 import Input from '../../components/Inputs/Input';
 import { validateEmail } from '../../utils/helper';
 import ProfilePhotoSelector from "../../components/Inputs/ProfilePhotoSelector";
-import axiosInstance from '../../utils/axiosInstance';
-import { API_PATHS } from '../../utils/apiPaths';
 import { UserContext } from '../../context/userContext';
 
 const SignUp = () => {
@@ -13,90 +11,59 @@ const SignUp = () => {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
   const [error, setError] = useState(null);
 
-  const {updateUser}=useContext(UserContext);
+  const { updateUser } = useContext(UserContext);
   const navigate = useNavigate();
 
-  //Handle Sign Up Form Submit
- const handleSignUp = async (e) => { 
-  e.preventDefault();
+  // Handle Sign Up Form Submit
+  const handleSignUp = async (e) => { 
+    e.preventDefault();
 
-  if (!fullName) {
-    setError("Please enter your name.");
-    return;
-  }
+    // Validation
+    if (!fullName) return setError("Please enter your name.");
+    if (!validateEmail(email)) return setError("Please enter a valid email address.");
+    if (!password) return setError("Please enter the password.");
 
-  if (!validateEmail(email)) {
-    setError("Please enter a valid email address.");
-    return;
-  }
+    setError("");
 
-  if (!password) {
-    setError("Please enter the password.");
-    return;
-  }
+    try {
+      const formData = new FormData();
+      formData.append("fullName", fullName);
+      formData.append("email", email);
+      formData.append("password", password);
+      if (profilePic) {
+        formData.append("profileImage", profilePic); // must match multer field name
+      }
 
-  setError("");
+      // Use relative API path so it works locally & in production with Vercel rewrite
+      const response = await fetch("/api/v1/auth/register", {
+        method: "POST",
+        body: formData,
+        credentials: "include",
+      });
 
-  try {
-    const formData = new FormData();
-    formData.append("fullName", fullName);
-    formData.append("email", email);
-    formData.append("password", password);
-    formData.append("profileImage", profilePic); // ✅ this must match multer name
+      const data = await response.json();
 
-    const response = await fetch("https://expense-tracker-backend-3sm9.onrender.com/api/v1/auth/register", {
-      method: "POST",
-      body: formData,
-    });
+      if (!response.ok) {
+        setError(data.message || "Something went wrong!");
+        return;
+      }
 
-    const data = await response.json();
-
-    if (!response.ok) {
-      setError(data.message || "Something went wrong!");
-      return;
-    }
-
-    // ✅ Navigate or show success message
-    navigate("/login");
-  } catch (err) {
-    console.error(err);
-    setError("Something went wrong. Please try again.");
-  }
-
-  //signUp API call
-  try{
-
-    //upload image if present
-    if(profilePic){
-      const imgUploadRes=await uploadImage(profilePic);
-      profileImageUrl=imgUploadRes.imageUrl || "";
-    }
-
-    const response=await axiosInstance.post(API_PATHS.AUTH.REGISTER,{
-      fullName,
-      email,
-      password,
-      profileImageUrl
-    });
-
-    const {token,user}=response.data;
-    if(token){
-      localStorage.setItem("token",token);
-      updateUser(user);
-      navigate("/dashboard");
-    }
-  } catch(error){
-    if(error.response && error.response.data.message){
-      setError(error.response.data.message);
-    }
-    else{
+      // Save token and user to context + localStorage
+      if (data.token) {
+        localStorage.setItem("token", data.token);
+        updateUser(data.user);
+        navigate("/dashboard");
+      } else {
+        navigate("/login");
+      }
+    } catch (err) {
+      console.error(err);
       setError("Something went wrong. Please try again.");
     }
-  }
-};
+  };
+
   return (
     <AuthLayout>
       <div className="lg:w-[100%] h-auto md:h-full mt-10 md:mt-0 flex flex-col justify-center">
@@ -135,6 +102,7 @@ const SignUp = () => {
               />
             </div>
           </div>
+
           {error && <p className="text-red-500 text-xs pb-2.5">{error}</p>}
 
           <button type="submit" className="btn-primary">
@@ -147,15 +115,10 @@ const SignUp = () => {
               Login
             </Link>
           </p>
-
         </form>
       </div>
     </AuthLayout>
-  )
-}
+  );
+};
 
-export default SignUp
-
-
-
-
+export default SignUp;
