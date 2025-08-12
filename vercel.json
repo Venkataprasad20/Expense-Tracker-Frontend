@@ -1,14 +1,5 @@
 {
   "rewrites": [
-    {
-      "source": "/api/(.*)",
-      "destination": "https://expense-tracker-backend-3sm9.onrender.com/api/$1"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
-    }
+    { "source": "/api/:path*", "destination": "https://your-backend.onrender.com/api/:path*" }
   ]
 }
