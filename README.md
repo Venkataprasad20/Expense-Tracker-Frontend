@@ -3,7 +3,7 @@
 A full-stack Expense Tracker Application built using MongoDB, Express.js, React, and Node.js (MERN) It allows users to manage their income and expenses, view transaction history, and track their financial activities with authentication and dashboard features.
 
 LivePreview
-https://expense-tracker-frontend-teal-pi.vercel.app/
+https://expense-tracker-frontend-eight-rust.vercel.app/
 
 🚀 Features
 
